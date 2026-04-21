@@ -27,8 +27,8 @@ jobs:
       # 4. Simulate deploy to testing environment
       - name: Deploy to testing
         run: |
-          echo "✅ Image ml-model:${{ github.sha }} ready for testing environment"
-          echo "👉 In a real project: push to Docker Hub / deploy to Kubernetes here"
+          echo " Image ml-model:${{ github.sha }} ready for testing environment"
+          echo " In a real project: push to Docker Hub / deploy to Kubernetes here"
 
       # 5. Print result
       - name: Pipeline result

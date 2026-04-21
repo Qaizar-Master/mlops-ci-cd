@@ -1,0 +1,15 @@
+git init
+git add . 
+commit and push
+
+# Build image
+docker build -t ml-model .
+
+# Run tests locally
+docker run --rm ml-model pytest tests/ -v
+
+# Run the API locally
+docker run -p 8000:8000 ml-model
+
+# Then hit: http://localhost:8000
+# POST http://localhost:8000/predict  with body [5.1, 3.5, 1.4, 0.2]
