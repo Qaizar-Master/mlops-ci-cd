@@ -5,33 +5,52 @@ on:
     branches: [ main ]
 
 jobs:
-  build-test-deploy:
-    runs-on: ubuntu-latest
 
+  build:
+    runs-on: ubuntu-latest
     steps:
-      # 1. Pull your code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Build the Docker image
       - name: Build Docker image
         run: docker build -t ml-model:${{ github.sha }} .
 
-      # 3. Run tests inside the container
+      - name: Save image as artifact
+        run: docker save ml-model:${{ github.sha }} | gzip > ml-model.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-model-image
+          path: ml-model.tar.gz
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ml-model-image
+
+      - name: Load Docker image
+        run: docker load < ml-model.tar.gz
+
       - name: Run tests
         run: |
           docker run --rm \
             ml-model:${{ github.sha }} \
             pytest tests/ -v
 
-      # 4. Simulate deploy to testing environment
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
       - name: Deploy to testing
         run: |
-          echo " Image ml-model:${{ github.sha }} ready for testing environment"
-          echo " In a real project: push to Docker Hub / deploy to Kubernetes here"
+          echo "Image ml-model:${{ github.sha }} ready for testing"
+          echo "In a real project: push to Docker Hub / Kubernetes here"
 
-      # 5. Print result
       - name: Pipeline result
         if: always()
-        run: |
-          echo "Pipeline finished with status: ${{ job.status }}"
+        run: echo "Pipeline finished with status ${{ job.status }}"
